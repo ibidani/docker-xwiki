@@ -53,7 +53,8 @@ RUN rm -rf /usr/local/tomcat/webapps/* && \
   curl -fSL "${XWIKI_URL_PREFIX}/xwiki-platform-distribution-war-${XWIKI_VERSION}.war" -o xwiki.war && \
   echo "$XWIKI_DOWNLOAD_SHA256 xwiki.war" | sha256sum -c - && \
   unzip -d /usr/local/tomcat/webapps/ROOT xwiki.war && \
-  rm -f xwiki.war
+  rm -f xwiki.war && \
+  useradd -ms /bin/bash tcuser
 
 # Copy the JDBC driver in the XWiki webapp
 RUN cp /usr/share/java/postgresql-jdbc4.jar /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/
@@ -99,5 +100,9 @@ VOLUME /usr/local/xwiki
 # are also passed to docker-entrypoint.sh. If "xwiki" is passed then XWiki will be configured the first time the
 # container executes and Tomcat will be started. If some other parameter is passed then it'll be executed to comply
 # with best practices defined at https://github.com/docker-library/official-images#consistency.
+RUN chown -R tcuser:tcuser /usr/local/tomcat
+USER tcuser
+WORKDIR /usr/local/tomcat
+
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["xwiki"]
